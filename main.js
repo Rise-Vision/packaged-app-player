@@ -24,15 +24,33 @@ function getCurrentOS() {
 }
 
 function getDisplayProperties() {
-	chrome.system.display.getInfo(function(displays) {	
-		windowOptions.width = 0;
+	chrome.system.display.getInfo(function(displays) {
+		console.log(displays[0].bounds.left);	
+		var f_mon=0;var f_left=0;var f_top=0;var max_width=0;var max_height=0;var total_width=0;var total_height=0;
 		for (var i = 0; i < displays.length; i++) {
 		        var display = displays[i];
-		        if (i === 0) {
-				windowOptions.height = display.bounds.height;
+		        if(os == "win") {
+		        	if(display.bounds.left > f_left) {f_left=display.bounds.left;f_mon=i;}
+		        	if(display.bounds.top > f_top) {f_top=display.bounds.top;f_mon=i;}
+		        	if(display.bounds.width > max_width) {max_width=display.bounds.width;}
+		        	if(display.bounds.height > max_height) {max_height=display.bounds.height;}
+			} else {
+				if(display.bounds.left === 0 && display.bounds.top === 0) {
+					total_width=display.bounds.width;
+					total_height=display.bounds.height;	
+				}
 			}
-			windowOptions.width = windowOptions.width + display.bounds.width;
 		}
+		
+		if(os == "win") {
+			var display = displays[f_mon];
+			windowOptions.width = display.bounds.left+max_width;
+			windowOptions.height = display.bounds.top+max_height;
+		} else {
+			windowOptions.width = total_width;
+			windowOptions.height = total_height;
+		}
+		
 		if(os != "win" || displays.length === 1) {
 			windowOptions.state = debugMode ? 'normal' : 'fullscreen';
 		}

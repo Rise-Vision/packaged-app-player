@@ -344,17 +344,17 @@ rvPlayer = function () {
 			try {
 				$rv.browser.clearData({since:0}, {
 					appcache: true,
-					cache: true,
+					//cache: true,
 					cookies: true,
-					downloads: true,
+					//downloads: true,
 					fileSystems: true,
-					formData: true,
-					history: true,
+					//formData: true,
+					//history: true,
 					indexedDB: true,
 					localStorage: true,
-					serverBoundCertificates: true,
-					pluginData: true,
-					passwords: true,
+					//serverBoundCertificates: true,
+					//pluginData: true,
+					//passwords: true,
 					webSQL: true}, function() {
 						restartViewer();
 					});
