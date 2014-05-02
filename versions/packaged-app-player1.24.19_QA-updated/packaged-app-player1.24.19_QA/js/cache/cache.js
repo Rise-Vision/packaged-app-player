@@ -16,7 +16,7 @@ rvCache = function () {
 		ws.start();
 		
 		workers = new rvWorkers(onFileReady, onDownloadIfModified, onClearCache, onGetCachedFiles);
-		this.workers = workers;
+
 		cacheCleaner = new rvCacheCleaner();
 	};
 	

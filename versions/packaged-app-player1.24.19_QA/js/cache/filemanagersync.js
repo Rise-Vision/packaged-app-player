@@ -441,9 +441,9 @@ function messageHandler(event) {
 
 		if (!self.fm) {
 		    self.fm = new rvFileManagerSync();
+		    self.fm.init();
 		}
-
-		self.fm.init();
+	    
 		switch (data.cmd) {
 		case 'getFile':
 			var retVal = {}; //helper object to return function results (headers) by reference 

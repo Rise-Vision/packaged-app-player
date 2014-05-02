@@ -1,6 +1,6 @@
 rvPlayer = function () {
 
-	
+
 	var w;
 	var PLAYER_SERVER_PORT = 9449;
 
@@ -342,13 +342,12 @@ rvPlayer = function () {
 			//now we can clear cache
 			//clearData is still in Dev channel, so using try-catch
 			try {
-				$rv.cache.workers.clearCache();
 				$rv.browser.clearData({since:0}, {
 					appcache: true,
 					//cache: true,
 					cookies: true,
 					//downloads: true,
-					//fileSystems: true,
+					fileSystems: true,
 					//formData: true,
 					//history: true,
 					indexedDB: true,
@@ -357,11 +356,11 @@ rvPlayer = function () {
 					//pluginData: true,
 					//passwords: true,
 					webSQL: true}, function() {
-						console.log("Cache cleared successfully.");
 						restartViewer();
 					});
 			} catch (e) {
 				console.warn("cache clearing failed. Error: " + e.message);
+			} finally {
 				restartViewer();
 			}
 		};

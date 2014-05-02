@@ -91,6 +91,8 @@ rvFileManagerSync = function () {
 		var file;
 		try {
 			var fileName = this.fileUrlToFileName(fileUrl);
+console.log("dddddddddddddddddddddddddddddd fileUrl:"+fileUrl);
+console.log("dddddddddddddddddddddddddddddd fileName:"+fileName);
 			var version = getCurrentVersion(fileName);
 			if (version == -1) {
 				log("File not found. Starting download...");
@@ -374,11 +376,16 @@ rvFileManagerSync = function () {
 	var saveFile = function(fileName, data) {
 		var file = null;
 		try {
+console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa   fileName : "+fileName);
+console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa   fsCache : "+fsCache);
+console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  fsCache.name : "+fsCache.name);
+
 			var fileEntry = fsCache.getFile(fileName, {create: true});
+console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa   fileName created : "+fileName);
 			fileEntry.createWriter().write(data);
 			file = fileEntry.file();
 		} catch (e) {
-			log("saveFile error: "  + e.message);
+			log("saveFile code: "+ e.code +"error: "  + e.message);
 		}
 		return file;
 	};
@@ -398,6 +405,7 @@ rvFileManagerSync = function () {
 		var dirReader = fsCache.createReader();
 		var entries = dirReader.readEntries();
 		for (var i = 0, entry; entry = entries[i]; ++i) {
+console.log("ccccccccccccccccccccccccccccccc in getCurrentVersion file: "+i+" ,  entry.name="+entry.name);
 			if (entry.isFile && startsWith(entry.name, name) && endsWith(entry.name, FILE_EXT_HEADERS)) {
 				var version = extractFileVersionAsInt(entry.name);
 				if (versions)
@@ -441,9 +449,9 @@ function messageHandler(event) {
 
 		if (!self.fm) {
 		    self.fm = new rvFileManagerSync();
+		    
 		}
-
-		self.fm.init();
+	    self.fm.init();
 		switch (data.cmd) {
 		case 'getFile':
 			var retVal = {}; //helper object to return function results (headers) by reference 
