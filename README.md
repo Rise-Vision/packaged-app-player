@@ -1,25 +1,36 @@
 ###player-chromeapp###
-**Copyright © 2010 - May 22, 2014 Rise Vision Incorporated.**Use of this software is governed by the GPLv3 license (reproduced in the LICENSE file).
+**Copyright © 2010 - May 22, 2014 Rise Vision Incorporated.**
+
+Use of this software is governed by the GPLv3 license (reproduced in the LICENSE file).
 
 player-chromeapp is a Chrome App, responsible for launching Viewer, to display HTML content from Rise Vision - our digital signage management application. More information about Viewer can be found in the Rise-Vision/viewer repository. Because player-chromeapp was built on the Chrome App architecture, we are able to provide a flexible Player for the Rise Vision digital signage application that can run on Chrome OS, Linux, Windows and MAC
 
 **How to get started?**
 All source code for the Project is included in this repository. Once you have forked and cloned the Project to your local repository, you can load player-chromeapp in Chrome
+
 1. Open Chrome browswer and navigate to, chrome://extensions
+
 2. Select the checkbox, “Developer mode” in the top right
+
 3. Select “Load unpacked extensions…”
+
 4. Browse to and select the directory of your local repository for the Project
 
 Once loaded, the Chrome App can be ran from the Chrome App Launcher
 
 **To develop on your local machine:**
 Source code can be modified from the Project’s local repository using your preferred IDE or text editor.  Once changes have been made the Chrome App needs to be reloaded. To reload the Chrome App
+
 1. Open Chrome browswer and navigate to, chrome://extensions
+
 2. If applicable, select the checkbox, “Developer mode” in the top right
+
 3. Locate the “Rise Chrome App Player” and select “Reload”
 
 player-chromeapp uses the standard Chrome App architecture. To facilitate communication between Viewer and player, two local web servers are created using chrome.socket library.
+
 1. Player “js/player/player.js” running on port 9449 handles viewer commands.
+
 2. Cache “js/cache/cache.js” running on port 9494 is cache server for video files.
 
 You can create a Display id by visiting http://risevision.com, you will need to register if you didn't have already and know its FREE.
