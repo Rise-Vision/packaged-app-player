@@ -1,6 +1,5 @@
 ###player-chromeapp###
-**Copyright © 2010 - May 22, 2014 Rise Vision Incorporated.**
-Use of this software is governed by the GPLv3 license (reproduced in the LICENSE file).
+**Copyright © 2010 - May 22, 2014 Rise Vision Incorporated.**Use of this software is governed by the GPLv3 license (reproduced in the LICENSE file).
 
 player-chromeapp is a Chrome App, responsible for launching Viewer, to display HTML content from Rise Vision - our digital signage management application. More information about Viewer can be found in the Rise-Vision/viewer repository. Because player-chromeapp was built on the Chrome App architecture, we are able to provide a flexible Player for the Rise Vision digital signage application that can run on Chrome OS, Linux, Windows and MAC
 
@@ -19,7 +18,7 @@ Source code can be modified from the Project’s local repository using your pre
 2. If applicable, select the checkbox, “Developer mode” in the top right
 3. Locate the “Rise Chrome App Player” and select “Reload”
 
-player-chromeapp uses the standard Chrome App architecture. To facilitate communication between Viewer and player, two local web servers are created using chrome.socket library. 
+player-chromeapp uses the standard Chrome App architecture. To facilitate communication between Viewer and player, two local web servers are created using chrome.socket library.
 1. Player “js/player/player.js” running on port 9449 handles viewer commands.
 2. Cache “js/cache/cache.js” running on port 9494 is cache server for video files.
 
