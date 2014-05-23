@@ -1,4 +1,8 @@
-﻿var $rv = $rv || {}; //Rise Vision namespace
+﻿// Copyright © 2010 - May 2014 Rise Vision Incorporated.
+// Use of this software is governed by the GPLv3 license
+// (reproduced in the LICENSE file).
+
+var $rv = $rv || {}; //Rise Vision namespace
 console.log(launchData);
 
 var downloadFileComplete = function(xhrProgressEvent, fileName, fileUrl) {

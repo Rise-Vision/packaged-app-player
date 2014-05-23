@@ -1,3 +1,6 @@
+// Copyright © 2010 - May 2014 Rise Vision Incorporated.
+// Use of this software is governed by the GPLv3 license
+// (reproduced in the LICENSE file).
 
 function rvPlayerDCPage() {
 
@@ -22,7 +25,6 @@ function rvPlayerDCPage() {
 	    //xhr.onerror = ???;
 	    xhr.onload = function(xhrProgressEvent) {
 	    	pageHTML = xhrProgressEvent.target.responseText;
-	        //console.log(pageHTML);
 	    }
 	    xhr.open('GET', fileUrl, true); //async=true
 	    xhr.send();
