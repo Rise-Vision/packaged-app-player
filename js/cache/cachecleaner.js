@@ -1,3 +1,7 @@
+// Copyright © 2010 - May 2014 Rise Vision Incorporated.
+// Use of this software is governed by the GPLv3 license
+// (reproduced in the LICENSE file).
+
 rvCacheCleaner = function () {
 		
 	var TIMER_INTERVAL_MS = 24 * 60 * 60 * 1000; //24 hours
