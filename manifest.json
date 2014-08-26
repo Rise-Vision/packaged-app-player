@@ -1,11 +1,11 @@
 ﻿{
   "manifest_version": 2,
-  "name": "Rise Chrome App Player - QA",
-  "description": "FREE Digital Signage Player for Google Chrome",
+  "name": "Rise Vision Chrome App Player",
+  "description": "Rise Vision - The Enterprise Digital Signage Platform - Everything you need to create amazing digital signage for free.",
   "author":  {
  	"email": "support@risevision.com"
  	},
-  "version": "1.24.21",
+  "version": "1.24.22",
   "icons": {
 	"16": "icon_16.png",
 	"128": "icon_128.png"
