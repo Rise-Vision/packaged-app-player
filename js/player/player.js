@@ -377,7 +377,9 @@ rvPlayer = function () {
 		chrome.runtime.getPlatformInfo(function(info) {
    			if (info.os == "cros") {
    				log("[reboot]");
-   				chrome.runtime.reload();
+   				chrome.runtime.restart();
+   				//if the app is in non-kiosk mode then as per documentation restart is no-op, and in this case next line restart viewer will be executed.
+   				restartViewer();
    			} else {
 				log("[reboot - not supported on "+info.os+", instead restarting viewer]");
 				restartViewer();
