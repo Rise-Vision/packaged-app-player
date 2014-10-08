@@ -2,7 +2,7 @@
 
 ## Introduction
 
-*player-chromeapp is a Chrome Store App, responsible for launching Viewer, to display HTML content from Rise Vision - our digital signage management application. More information about Viewer can be found in the Rise-Vision/viewer repository. Because player-chromeapp was built on the Chrome App architecture, we are able to provide a flexible Player for the Rise Vision digital signage application that can run on Chrome OS, Linux, Windows and MAC*
+*player-chromeapp is a Chrome App, responsible for launching Viewer, to display HTML content from Rise Vision - our digital signage management application. More information about Viewer can be found in the Rise-Vision/viewer repository. Because player-chromeapp was built on the Chrome App architecture, we are able to provide a flexible Player for the Rise Vision digital signage application that can run on Chrome OS, Linux, Windows and MAC*
 
 player-chromeapp works in conjunction with [Rise Vision](http://www.risevision.com), the [digital signage management application](http://rva.risevision.com/) that runs on [Google Cloud](https://cloud.google.com).
 
