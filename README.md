@@ -23,7 +23,7 @@ At this time Chrome is the only browser that this project and Rise Vision suppor
 - Once loaded, the Chrome App "Rise Vision Chrome App Player" can be ran from the Chrome App Launcher
 
 
-player-demo-chromeapp uses the standard Chrome App architecture. To facilitate communication between Viewer and player, two local web servers are created using chrome.socket library.
+player-chromeapp uses the standard Chrome App architecture. To facilitate communication between Viewer and player, two local web servers are created using chrome.socket library.
 
 - Player “js/player/player.js” running on port 9449 handles viewer commands.
 - Cache “js/cache/cache.js” running on port 9494 is cache server for video files.
