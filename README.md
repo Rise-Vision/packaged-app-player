@@ -23,7 +23,10 @@ At this time Chrome is the only browser that this project and Rise Vision suppor
 - Once loaded, the Chrome App "Rise Vision Chrome App Player" can be ran from the Chrome App Launcher
 
 ### Run Local
-"Rise Vision Chrome App Player" can be ran from the Chrome App Launcher
+- "Rise Vision Chrome App Player" can be ran from the Chrome App Launcher
+- Player will open full screen on primary monitor.
+- Upon startup, the Rise Vision Player will require either a Display ID or Claim ID to connect your Display to the Platform. From the [Rise Vision Platform](http://rva.risevision.com) click on Displays, then Add Display give it a name and click save. Copy the Display ID and enter it in the Rise Vision Player on startup.
+- One can change the display id, or shift between test and production platform by opening the ["Rise Player Configuration"](http://localhost:9449/config) page. Note: this page will be available only when the app is running.
 
 ### Dependencies
 Latest version of Chrome Browser
