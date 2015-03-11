@@ -60,6 +60,10 @@ rvCache = function () {
 	};
 
 	var processRequest_GetVideo = function(socketId, fileUrl, keepAlive, range) {
+		//append displayid if available
+		if($rv.config.displayId != null) {
+			fileUrl = fileUrl + (fileUrl.indexOf('?') > -1 ? (fileUrl.slice(-1) == "&" ? "":"&") : "?" ) + "displayid=" + $rv.config.displayId;
+		}
 		fileRequests.register(fileUrl);
 		var urlIsAlreadyRequested = socketRequests.valExists(fileUrl);
 		socketRequests.put(socketId, {"url": fileUrl, "keepAlive": keepAlive, "range": range});
