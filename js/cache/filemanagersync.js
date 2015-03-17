@@ -195,7 +195,7 @@ rvFileManagerSync = function () {
 		return res;
 	};
 
-	var readAllHeaders = function(fileName, refVal, needToUpdateFileLastAccessedTime) {
+	var readAllHeaders = function(fileName, needToUpdateFileLastAccessedTime) {
 		var fileEntry = fsCache.getFile(fileName, {create: false});
 		var file = fileEntry.file();
 		var headers = blobToStr(file);

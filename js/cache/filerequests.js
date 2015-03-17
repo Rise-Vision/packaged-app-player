@@ -19,7 +19,7 @@ rvFileRequestInfo = function(url, downloadComplete) {
 
 rvFileRequests = function() {
 	
-	var DATE_OFFSET_5_MINUTES = 5*60*1000; //5 minutes threshold to check if file is modified.
+	var REQ_OFFSET_MINUTES = 15*60*1000; //15 minutes threshold to check if file is modified.
 	var map = new rvHashTable();
 
 	this.register = function(url) {
@@ -39,10 +39,10 @@ rvFileRequests = function() {
 			map.put(url, fr);
 			res = true;
 		} else {
-			//check if enough time (5 minutes) past since last request and if it's not downloading
+			//check if enough time (15 minutes) past since last request and if it's not downloading
 			if (fr.downloadComplete) {
-				var dt5m = new Date().getTime() - DATE_OFFSET_5_MINUTES;
-				if (fr.lastRequested.getTime() < dt5m) {
+				var frOffsetM = new Date().getTime() - REQ_OFFSET_MINUTES;
+				if (fr.lastRequested.getTime() < frOffsetM) {
 					res = true;
 					fr.setDownloadComplete(false);
 				}

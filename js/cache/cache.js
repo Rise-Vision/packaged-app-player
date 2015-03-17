@@ -99,7 +99,7 @@ rvCache = function () {
 			}
 		}
 		
-		//downloadIfModified(requestUrl);
+		downloadIfModified(requestUrl);
 	};
 
 	var onClearCache = function() {
