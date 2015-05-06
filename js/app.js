@@ -104,28 +104,28 @@ onload = function (e) {
         }
 
     }
-
-    $rv.config = new rvConfig();
-    $rv.config.init(onConfigLoad);
-    resizeBrowser();
+    try {
+        $rv.config = new rvConfig();
+        $rv.config.init(onConfigLoad);
+        resizeBrowser();
+    } catch (e) {
+        console.log("onload error" + e.message);
+    }        
 };
 
 var onConfigLoad = function() {
-    $rv.cache = new rvCache();
-    $rv.cache.init($rv.config);
-    
-    $rv.player = new rvPlayer();
-    $rv.player.init($rv.config);
 
-//    if ($rv.config.screenWidth && $rv.config.screenHeight) {
-//    	console.log("screen size is loaded from cache");
-//    	window.resizeTo($rv.config.screenWidth, $rv.config.screenHeight);
-//    } else {
-//    	console.log("screen size is NOT loaded from cache");
-//    }
+    try {
+        $rv.cache = new rvCache();
+        $rv.cache.init($rv.config);
     
-    resizeBrowser();
-	
+        $rv.player = new rvPlayer();
+        $rv.player.init($rv.config);
+        
+        resizeBrowser();
+    } catch (e) {
+        console.log("onConfigLoad error" + e.message);
+    }
 };
 
 function resizeBrowser() {

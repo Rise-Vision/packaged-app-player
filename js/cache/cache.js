@@ -16,19 +16,23 @@ rvCache = function () {
 	var fileRequests = new rvFileRequests();  //info about file last modified time
 	
 	this.init = function() {
+	    try {
 		ws = new rvWebServer(CACHE_SERVER_PORT, onRequest);
 		ws.start();
 		
 		workers = new rvWorkers(onFileReady, onDownloadIfModified, onClearCache, onGetCachedFiles);
 		this.workers = workers;
 		cacheCleaner = new rvCacheCleaner();
+	    } catch (e) {
+	        console.log("rvCache:init error" + e.message);
+	    } 
 	};
 	
 	var log = function(msg) {
 		console.log(msg);
 	}
 	
-	var onRequest = function(socketId, cmd, qs, keepAlive, range) {
+	var onRequest = function(socketId, cmd, qs, keepAlive, range, ifRange, ifNoneMatch) {
 		ws.openSockets.put(socketId, null)
 		try {
 			log("Cache request: cmd=" + cmd + " | socketId=" + socketId + " | qs=" + qs);
@@ -46,10 +50,10 @@ rvCache = function () {
 				workers.clearCache();
 	        } else if (cmd === "/get_cached_files") {
 	    		socketRequests.put(socketId, {"url": "cmd:get_cached_files", "keepAlive": keepAlive});
-				workers.getCachedFiles();
+			workers.getCachedFiles();
 	        } else if (url) {
 		    	url = decodeURIComponent(url);
-	        	processRequest_GetVideo(socketId, url, keepAlive, range);
+	        	processRequest_GetVideo(socketId, url, keepAlive, range, ifRange, ifNoneMatch);
 	        } else {
 				log("Unrecognized request. Returning " + ws.HTTP_BAD_REQUEST_TEXT);
 				ws.writeErrorResponse(socketId, ws.HTTP_BAD_REQUEST_TEXT, keepAlive);
@@ -59,14 +63,14 @@ rvCache = function () {
 		}
 	};
 
-	var processRequest_GetVideo = function(socketId, fileUrl, keepAlive, range) {
+	var processRequest_GetVideo = function(socketId, fileUrl, keepAlive, range, ifRange, ifNoneMatch) {
 		//append displayid if available
 		if($rv.config.displayId != null) {
 			fileUrl = fileUrl + (fileUrl.indexOf('?') > -1 ? (fileUrl.slice(-1) == "&" ? "":"&") : "?" ) + "displayid=" + $rv.config.displayId;
 		}
 		fileRequests.register(fileUrl);
 		var urlIsAlreadyRequested = socketRequests.valExists(fileUrl);
-		socketRequests.put(socketId, {"url": fileUrl, "keepAlive": keepAlive, "range": range});
+		socketRequests.put(socketId, {"url": fileUrl, "keepAlive": keepAlive, "range": range, "ifRange": ifRange, "ifNoneMatch": ifNoneMatch});
 		if (!urlIsAlreadyRequested) {
 			workers.getFile(fileUrl);
 		}
@@ -80,16 +84,20 @@ rvCache = function () {
 			if (requestUrl == socketInfo.url) {
 				var keepAlive = socketInfo.keepAlive;
 				var range = socketInfo.range;
+				var ifRange = socketInfo.ifRange;
+				var ifNoneMatch = socketInfo.ifNoneMatch;
 				socketRequests.remove(socketId);
 				socketId = parseInt(socketId, 10);
-				log("onFileReady: socketId=" + socketId + " | url=" + requestUrl + " | range=" + range);
+				log("onFileReady: socketId=" + socketId + " | url=" + requestUrl + " | range=" + range + " | if-Range=" + ifRange + " | If-None-Match=" + ifNoneMatch);	
+				
+				var headersObj = headersStrToObj(headers);
 				if (file) {
 					if (range && range.length == 1) {
 						range.push(file.size - 1);
 					}
-					ws.writeResponse_Headers(socketId, file.size, headers, keepAlive, range);
+					ws.writeResponse_Headers(socketId, file.size, headers, keepAlive, range, ifRange, ifNoneMatch);
 					if (file.size) {
-						ws.writeResponse_Body_File(socketId, file.size, keepAlive, range, file);
+						ws.writeResponse_Body_File(socketId, file.size, headers, keepAlive, range, ifRange, ifNoneMatch,  file);
 					} else {
 						ws.writeResponse_End(socketId, keepAlive);
 					}
@@ -101,7 +109,34 @@ rvCache = function () {
 		
 		downloadIfModified(requestUrl);
 	};
-
+	var headersStrToObj = function(headersStr) {
+		var res = null;
+		if (headersStr) {
+			res = {};
+			var arr = headersStr.split("\n");
+			for (var i = 0; i < arr.length; i++) {
+				var key = arr[i].split(":", 1)[0]; //use split to get the key only because there might be more than one ":"
+				key = key ? key.toLowerCase() : "";
+				var value = arr[i].substring(key.length+1);
+				value = value ? value.trim() : "";
+				if ("content-type" == key) {
+					res.ContentType = value;
+				} else if ("content-length" == key) {
+					res.ContentLength = value;
+				} else if ("last-modified" == key) {
+					res.LastModified = value;
+				} else if ("etag" == key) {
+					res.ETag = value;
+				} else if ("if-range" == key) {
+					res.ifRange = value;
+				} else if ("if-none-match" == key) {
+					res.ETag = value;
+				}
+				
+			}
+		}
+		return res;
+	};
 	var onClearCache = function() {
 		var socketIds = socketRequests.keySet();
 		for (var i = 0; i < socketIds.length; i++) {

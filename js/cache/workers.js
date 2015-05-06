@@ -20,6 +20,12 @@ rvWorkers = function (onFileReady, onDownloadIfModified, onClearCache, onGetCach
 		console.log(msg);
 	};
 	
+	var initFS = function() {
+		var wi = getWorkerItem(fmWorkers, FILE_MANAGER_PATH);
+		wi.status == WORKER_STATUS_BUSY;
+		wi.worker.postMessage({'cmd': 'initFS', 'id': wi.id});
+	};
+	
 	this.getFile = function(fileUrl) {
 		var wi = getWorkerItem(fmWorkers, FILE_MANAGER_PATH);
 		wi.status == WORKER_STATUS_BUSY;
@@ -47,6 +53,10 @@ rvWorkers = function (onFileReady, onDownloadIfModified, onClearCache, onGetCach
 	var fmEventHandler = function(event) {
 		var data = event.data;
 		switch (data.cmd) {
+			case 'initFS_complete':
+				log('WORKER ' + data.id + ': initFS_complete');
+				changeWorkerStatus(fmWorkers, data.id, WORKER_STATUS_READY);
+				break;
 			case 'log':
 				log('WORKER ' + data.id + ': ' + data.msg);
 				break;
@@ -109,6 +119,6 @@ rvWorkers = function (onFileReady, onDownloadIfModified, onClearCache, onGetCach
 	    	}
 	    }
 	};
-
+initFS();
 };
 

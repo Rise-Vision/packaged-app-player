@@ -5,7 +5,7 @@
 rvCacheCleaner = function () {
 		
 	var TIMER_INTERVAL_MS = 24 * 60 * 60 * 1000; //24 hours
-	
+	var worker;
 	var start = function() {
 		console.log('DeleteExpiredJob start');
 		onTimer();
@@ -18,8 +18,32 @@ rvCacheCleaner = function () {
 	var deleteExpired = function() {
 		console.log('deleteExpired');
 		//it's easier to work with files in worker. Close worker when done;
-	    var worker = new Worker("/js/cache/filemanagersync.js");
-	    worker.postMessage({'cmd': 'deleteExpired'});
+	    	worker = new Worker("/js/cache/filemanagersync.js");
+	    	this.worker = worker;
+	    	worker.addEventListener('message', fmEventHandler, false);
+	    	this.worker.postMessage({'cmd': 'initFS'});
+	};
+
+	var fmEventHandler = function(event) {
+		var data = event.data;
+		switch (data.cmd) {
+			case 'initFS_complete':
+				console.log('initFS_complete');
+				worker.postMessage({'cmd': 'deleteExpired'});
+				break;
+			case 'log':
+				console.log(data.msg);
+				break;
+			case 'deleteExpired_complete':
+				console.log('deleteExpired_complete');
+				break;
+			case 'getCachedFiles_complete':
+				console.log('getCachedFiles_complete files: ' + data.files);
+				
+				break;				
+			default:
+				console.log('Unknown command: ' + data.msg);
+		};
 	};
 
 	var onTimer = function() {

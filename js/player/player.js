@@ -33,7 +33,7 @@ rvPlayer = function () {
 	};
 		
 	this.init = function() {	
-		
+	   try {	
 		ws = new rvWebServer(PLAYER_SERVER_PORT, onRequest);
 		ws.start();
 		
@@ -51,7 +51,9 @@ rvPlayer = function () {
 		if (!$rv.debug) {
 			startViewerWithDelay();
 		}
-
+	   } catch (e) {
+	        console.log("rvplayer:init error" + e.message);
+	   } 
 	};
 
 
@@ -118,6 +120,11 @@ rvPlayer = function () {
 		    			displayStandby(true);
 		    		}
 	    		}
+	    		var rotation = ws.getUrlParam(qs, "orientation");
+	    		if (rotation != undefined) {
+	    			log("setting rotation to " + rotation);
+	    			setOrientation(rotation);
+	    		}
 				ws.writeTextResponse(socketId, "", keepAlive, ws.CONTENT_TYPE_TEXT_PLAIN);
 	        } else if (cmd === "/save_property") {
 	            
@@ -183,7 +190,7 @@ rvPlayer = function () {
 				ws.writeErrorResponse(socketId, ws.HTTP_BAD_REQUEST_TEXT, keepAlive);
 	        }
 		} catch (e) {
-    		log("onRequest error" + e.message);
+    			log("rvplayer:onRequest error" + e.message);
 			ws.writeErrorResponse(socketId, keepAlive, ws.HTTP_BAD_REQUEST_TEXT);
 		}
         
@@ -203,6 +210,22 @@ rvPlayer = function () {
 			}
 		});
 	};
+	
+	var setOrientation = function(rotation) {
+		if(launchData.os == "cros") {
+	                chrome.system.display.getInfo(function(displays) {
+				console.log("Current: " + displays[0].rotation);
+				if(rotation != displays[0].rotation) {
+					var info = {rotation:0};
+					info.rotation = rotation % 360;
+					console.log("New: " + info.rotation);
+					chrome.system.display.setDisplayProperties(displays[0].id, info, function(displays) {
+						//
+					});
+				}
+			});
+		}
+	}
 
 ////////// SERIAL CONNECT     /////////////////////
 
