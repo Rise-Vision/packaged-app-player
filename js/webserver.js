@@ -103,8 +103,9 @@ rvWebServer = function(int_port, requestCallback) {
 					uri = uri.substring(0, qi);
 				}
 
+				var headersObj = headersStrToObj(data.toLowerCase());
 				var cmd = uri;
-				requestCallback(socketId, cmd, qs, keepAlive, range);
+				requestCallback(socketId, cmd, qs, keepAlive, range, headersObj.ifRange, headersObj.ifNoneMatch );
 
 			} else {
 				console.warn("invalid request: " + data);
@@ -188,7 +189,35 @@ rvWebServer = function(int_port, requestCallback) {
 		});
 	};
 
-	this.writeResponse_Headers = function(socketId, fileSize, headers, keepAlive, range) {
+	var headersStrToObj = function(headersStr) {
+		var res = null;
+		if (headersStr) {
+			res = {};
+			var arr = headersStr.split("\n");
+			for (var i = 0; i < arr.length; i++) {
+				var key = arr[i].split(":", 1)[0]; //use split to get the key only because there might be more than one ":"
+				key = key ? key.toLowerCase() : "";
+				var value = arr[i].substring(key.length+1);
+				value = value ? value.trim() : "";
+				if ("content-type" == key) {
+					res.ContentType = value;
+				} else if ("content-length" == key) {
+					res.ContentLength = value;
+				} else if ("last-modified" == key) {
+					res.LastModified = value;
+				} else if ("etag" == key) {
+					res.ETag = value;
+				} else if ("if-range" == key) {
+					res.ifRange = value;
+				} else if ("if-none-match" == key) {
+					res.ifNoneMatch = value;
+				}
+			}
+		}
+		return res;
+	};
+	
+	this.writeResponse_Headers = function(socketId, fileSize, headers, keepAlive, range, ifRange, ifNoneMatch) {
 		//Content type and length headers may come from cached headers file
 		var httpCode = this.HTTP_OK_TEXT;
 		
@@ -196,20 +225,38 @@ rvWebServer = function(int_port, requestCallback) {
 			headers = "Content-length: " + fileSize
 				+ "\nContent-type: " + this.CONTENT_TYPE_TEXT_PLAIN;
 		}
-		
+
 		if (range && range.length == 2) {
-			//replace Content-length
-			var ha = headers.split("\n");
-			for ( var i = 0; i < ha.length; i++) {
-				if (ha[i].toLowerCase().indexOf("content-length:") == 0) {
-					ha[i] = "Content-length: " + (range[1] - range[0] + 1);
-					break;
+			var addRangeHeader = false;
+			if(ifRange) {
+				var headersObj = headersStrToObj(headers);
+				if(ifRange == headersObj.ETag) {
+					addRangeHeader = true;
 				}
+			} else if(ifNoneMatch) {
+				var headersObj = headersStrToObj(headers);
+			 	if(ifNoneMatch == headersObj.ETag) {
+					addRangeHeader = true;
+				}
+			} else {
+				addRangeHeader = true;
 			}
-			headers = ha.join("\n");
 			
-			httpCode = this.HTTP_PARTIAL_CONTENT_TEXT;
-			headers += "\nContent-Range: bytes " + range[0] + "-" + range[1] + "/" + fileSize;
+			if(addRangeHeader) {
+				console.log("[writeTextResponseHeader] adding range header");
+				//replace Content-length
+				var ha = headers.split("\n");
+				for ( var i = 0; i < ha.length; i++) {
+					if (ha[i].toLowerCase().indexOf("content-length:") == 0) {
+						ha[i] = "Content-length: " + (range[1] - range[0] + 1);
+						break;
+					}
+				}
+				headers = ha.join("\n");
+				
+				httpCode = this.HTTP_PARTIAL_CONTENT_TEXT;
+				headers += "\nContent-Range: bytes " + range[0] + "-" + range[1] + "/" + fileSize;
+			}
 		}
 		
 		headers += this.getCommonHeaders(keepAlive) + "\nAccept-Ranges: bytes";
@@ -222,16 +269,35 @@ rvWebServer = function(int_port, requestCallback) {
 		});
 	};
 	
-	this.writeResponse_Body_File = function(socketId, fileSize, keepAlive, range, file) {
+	this.writeResponse_Body_File = function(socketId, fileSize, headers, keepAlive, range, ifRange, ifNoneMatch, file) {
 		
 		var ws = this;
 		var chunkSize = 10*1024*1024;
 		var startPos = 0;
 		var endPos = fileSize-1;
 		
+		
 		if (range && range.length == 2) {
-			startPos = range[0];
-			endPos = range[1];
+			var addRangeHeader = false;
+			if(ifRange) {
+				var headersObj = headersStrToObj(headers);
+				if(ifRange == headersObj.ETag) {
+					addRangeHeader = true;
+				}
+			} else if(ifNoneMatch) {
+				var headersObj = headersStrToObj(headers);
+			 	if(ifNoneMatch == headersObj.ETag) {
+					addRangeHeader = true;
+				}
+			} else {
+				addRangeHeader = true;
+			}
+			
+			if(addRangeHeader) {
+				console.log("[writeResponse_Body_File] using range");
+				startPos = range[0];
+				endPos = range[1];
+			}
 		}
 
 		if (startPos > endPos) {
