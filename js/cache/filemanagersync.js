@@ -1,4 +1,4 @@
-// Copyright © 2010 - May 2014 Rise Vision Incorporated.
+// Copyright © 2010 - May 2015 Rise Vision Incorporated.
 // Use of this software is governed by the GPLv3 license
 // (reproduced in the LICENSE file).
 
@@ -16,8 +16,8 @@ rvFileManagerSync = function () {
 	var HEADER_FILE_URL = "File-URL";
 	var FILE_EXT_DATA = "dat";
 	var FILE_EXT_HEADERS = "txt";
-
-	var FILE_KEEP_IN_CACHE_DURATION_DAYS = 30;
+	var CACHE_MINIMUM_LIMIT = 512*1024*1024; //512MB
+	var FILE_KEEP_IN_CACHE_DURATION_DAYS = 7;
 	var FILE_KEEP_IN_CACHE_DURATION_MS = FILE_KEEP_IN_CACHE_DURATION_DAYS * 24 * 60 * 60 * 1000; //milliseconds
 
 	self.requestFileSystem = self.webkitRequestFileSystem || self.requestFileSystem;
@@ -119,7 +119,7 @@ rvFileManagerSync = function () {
 		});
 	};
 
-	this.getFile = function(fileUrl) {
+	this.getFile = function(fileUrl, remainingBytes) {
 		
 		var retVal = {}; //helper object to return function results (headers) by reference 
 		try {
@@ -128,11 +128,19 @@ rvFileManagerSync = function () {
 			getCurrentVersion(fileName, function(version) {
 				if (version == -1) {
 					log("File not found. Starting download...");
-					download(fileName, fileUrl, retVal, null, function(file) {
-						log("getFile:download complete");
-						self.postMessage({'cmd': 'getFile_complete', 'id': id, 'fileUrl': fileUrl, 'file': file, 'headers': retVal.headers});	
+					if(remainingBytes < CACHE_MINIMUM_LIMIT ) {
+				        	log("getFile: avaiable space is " + (+remainingBytes - +CACHE_MINIMUM_LIMIT) + ". Skipping download.");
+						self.postMessage({'cmd': 'getFile_complete', 'id': id, 'fileUrl': fileUrl, 'file': null, 'headers': null});	
 						return;
-					});
+				        }
+				        else {
+						download(fileName, fileUrl, retVal, null, remainingBytes, function(file) {
+							log("getFile:download complete");
+							self.postMessage({'cmd': 'getFile_complete', 'id': id, 'fileUrl': fileUrl, 'file': file, 'headers': retVal.headers});	
+							return;
+						});
+					}
+					
 				} else {
 					log("File is found in cache.");
 					readAllHeaders(formatFileName(fileName, version, FILE_EXT_HEADERS), true, function(headers) {
@@ -362,8 +370,44 @@ rvFileManagerSync = function () {
         return reader.readAsText(blob);
 	};
 
-	var download = function(fileName, fileUrl, retVal, condHeader, callbackFunc) {
+	var download = function(fileName, fileUrl, retVal, condHeader, remainingBytes, callbackFunc) {
 		var file = null;
+		try {
+		    var xhr = new XMLHttpRequest();
+		    xhr.responseType = "blob";
+		    xhr.open('HEAD', fileUrl, false); //async=FALSE
+		    if (condHeader) {
+			    xhr.setRequestHeader(condHeader.name, condHeader.value);
+		    }
+		    xhr.send();
+		    
+		    log(" --- on download. xhr.readyState="+xhr.readyState+" | xhr.status="+xhr.status); //DO NOT DELETE!!! This line somehow magically fixes InvalidState error.
+		    if (xhr.status >= 200 && xhr.status < 300) {
+		    	var contentLength = xhr.getResponseHeader(HEADER_CONTENT_LENGTH);
+		    	if( (+contentLength + +CACHE_MINIMUM_LIMIT) > remainingBytes ) {
+				log("download: requested file size " + contentLength + " is greater than available space " + (+remainingBytes - +CACHE_MINIMUM_LIMIT) + ". Skipping download.");
+				callbackFunc(null);
+				return;
+			}
+			//check if entire file has been downloaded. It happens when 
+			// - HEAD requests are treated as GET on server
+			// - Chrome replaces HEAD by GET when it follows 301 redirect
+			if (xhr.response && xhr.response.size > 0) {
+				//response includes data - skip GET request and just save data
+				log('download: File is modified. HEAD request returned data (oh-oh!). Saving... fileName=' + fileName);
+				saveResponseData(fileName, fileUrl, xhr, retVal, function(file) {
+					callbackFunc(file);		
+		    			return;
+				});
+			}
+		    } else {
+		    	callbackFunc(null);
+			return;
+		    }
+		} catch (e) {
+			log("download error: " + e.message);
+		}
+		
 		try {
 		    var xhr = new XMLHttpRequest();
 		    xhr.responseType = "blob";
@@ -396,7 +440,7 @@ rvFileManagerSync = function () {
 		}
 	};
 
-	this.downloadIfModified = function(fileUrl) {	
+	this.downloadIfModified = function(fileUrl, remainingBytes) {	
 		//send HEAD request
 		var fileName = this.fileUrlToFileName(fileUrl);
 		getCurrentVersion(fileName, function(version) {
@@ -422,33 +466,40 @@ rvFileManagerSync = function () {
 					}
 					log("sending xhr request fileUrl:" + fileUrl);
 					xhr.send();
+				
+				
+					//expected responses: "200 OK" or "304 Not Modified"	
+					log(" --- on downloadIfModified. xhr.readyState="+xhr.readyState+" | xhr.status="+xhr.status); //DO NOT DELETE!!! This line somehow magically fixes InvalidState error.
+					if (xhr.status >= 200 && xhr.status < 300) {
+						//check if entire file has been downloaded. It happens when 
+						// - HEAD requests are treated as GET on server
+						// - Chrome replaces HEAD by GET when it follows 301 redirect
+						if (xhr.response && xhr.response.size > 0) {
+							//response includes data - skip GET request and just save data
+							log('File is modified. HEAD request returned data (oh-oh!). Saving... fileName=' + fileName);
+							var contentLength = xhr.getResponseHeader(HEADER_CONTENT_LENGTH);
+							if( (+contentLength + +CACHE_MINIMUM_LIMIT) > remainingBytes ) {
+								log("downloadIfModified: requested file size " + contentLength + " is greater than available space " + (+remainingBytes - +CACHE_MINIMUM_LIMIT) + ". Skipping download.");
+								self.postMessage({'cmd': 'downloadIfModified_complete', 'id': id, 'fileUrl': data.fileUrl});
+								return;
+							}
+							saveResponseData(fileName, fileUrl, xhr, retVal, function(file) {
+								self.postMessage({'cmd': 'downloadIfModified_complete', 'id': id, 'fileUrl': data.fileUrl});
+								return;
+							});
+						} else {
+							log('File is modified. Re-downloading... fileName=' + fileName);
+							download(fileName, fileUrl, null, condHeader, remainingBytes, function() {
+								self.postMessage({'cmd': 'downloadIfModified_complete', 'id': id, 'fileUrl': fileUrl});
+								return;
+							});
+						}
+					} else {
+						self.postMessage({'cmd': 'downloadIfModified_complete', 'id': id, 'fileUrl': fileUrl});
+						return;
+					}
 				} catch (e) {
 					log("checkIfModiifed download error: " + e.message);
-					self.postMessage({'cmd': 'downloadIfModified_complete', 'id': id, 'fileUrl': fileUrl});
-					return;
-				}
-				
-				//expected responses: "200 OK" or "304 Not Modified"	
-				log(" --- on downloadIfModified. xhr.readyState="+xhr.readyState+" | xhr.status="+xhr.status); //DO NOT DELETE!!! This line somehow magically fixes InvalidState error.
-				if (xhr.status >= 200 && xhr.status < 300) {
-					//check if entire file has been downloaded. It happens when 
-					// - HEAD requests are treated as GET on server
-					// - Chrome replaces HEAD by GET when it follows 301 redirect
-					if (xhr.response && xhr.response.size > 0) {
-						//response includes data - skip GET request and just save data
-						log('File is modified. HEAD request returned data (oh-oh!). Saving... fileName=' + fileName);
-						saveResponseData(fileName, fileUrl, xhr, retVal, function(file) {
-							self.postMessage({'cmd': 'downloadIfModified_complete', 'id': id, 'fileUrl': data.fileUrl});
-							return;
-						});
-					} else {
-						log('File is modified. Re-downloading... fileName=' + fileName);
-						download(fileName, fileUrl, null, condHeader, function() {
-							self.postMessage({'cmd': 'downloadIfModified_complete', 'id': id, 'fileUrl': fileUrl});
-							return;
-						});
-					}
-				} else {
 					self.postMessage({'cmd': 'downloadIfModified_complete', 'id': id, 'fileUrl': fileUrl});
 					return;
 				}
@@ -525,7 +576,6 @@ rvFileManagerSync = function () {
 		if (v) {
 			headers.push(HEADER_LAST_MODIFIED + ": " + v);
 		}
-		
 		headers.push(HEADER_CONTENT_TYPE + ": " + xhr.response.type);
 		headers.push(HEADER_CONTENT_LENGTH + ": " + xhr.response.size);
 		headers.push(HEADER_FILE_URL + ": " + fileUrl);
@@ -619,10 +669,10 @@ function messageHandler(event) {
 			self.fm.init();
 			break;
 		case 'getFile':
-			self.fm.getFile(data.fileUrl);
+			self.fm.getFile(data.fileUrl, data.remainingBytes);
 			break;
 		case 'downloadIfModified':
-			self.fm.downloadIfModified(data.fileUrl)
+			self.fm.downloadIfModified(data.fileUrl, data.remainingBytes)
 			break;
 		case 'deleteExpired':
 			self.fm.deleteAllDuplicates();
