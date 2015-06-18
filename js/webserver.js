@@ -1,4 +1,4 @@
-rvWebServer = function(int_port, requestCallback) {
+﻿rvWebServer = function(int_port, requestCallback) {
 
 	this.CONTENT_TYPE_JAVASCRIPT = "text/javascript; charset=UTF-8";
 	this.CONTENT_TYPE_TEXT_XML = "text/xml; charset=UTF-8";
@@ -52,35 +52,49 @@ rvWebServer = function(int_port, requestCallback) {
 	};
 
 	var acceptNext = function() {
+	  try {	
 		if (!useOptimistingAccept) {
 			socket.accept(socketInfo.socketId, onAccept);
 		}
+	  } catch (e) {
+		console.error(e);
+	  }
 	};
 	
 	var acceptNext_Optimistic = function() {
+	  try {
 		if (useOptimistingAccept) {
 			socket.accept(socketInfo.socketId, onAccept);
 		}
+	  } catch (e) {
+		console.error(e);
+	  }
 	};
 
 	var onAccept = function(acceptInfo) {
+	  try {
 		console.log("ACCEPT", acceptInfo);
 		acceptNext_Optimistic(); // continue accepting connections
 		if (acceptInfo.resultCode === 0) {
 			readFromSocket(acceptInfo.socketId);
 		}
+	  } catch (e) {
+		console.error(e);
+	  }
 	};
 	
 	var readFromSocket = function(socketId) {
-		// Read in the data
+	  try {
+	  	// Read in the data
 		socket.read(socketId, function(readInfo) {
+		  try {
 			console.log("READ", readInfo);
-            if (readInfo.resultCode < 0) {
-                console.error("socket is dead");
-                socket.destroy(socketId);
-    			acceptNext();
-                return;
-            }
+		        if (readInfo.resultCode < 0) {
+		        	console.error("socket is dead");
+		                socket.destroy(socketId);
+		    		acceptNext();
+		                return;
+		        }
 			// Parse the request.
 			var data = arrayBufferToString(readInfo.data);
 			if (data.indexOf("GET ") == 0) {
@@ -112,7 +126,13 @@ rvWebServer = function(int_port, requestCallback) {
 				socket.destroy(socketId);
 				//this.openSockets.remove(socketId);
 			}
+		  } catch (e) {
+			console.error(e);
+		  }
 		});
+	  } catch (e) {
+		console.error(e);
+	  }
 	};
 
 	var getRanges = function (headers) {
@@ -167,6 +187,7 @@ rvWebServer = function(int_port, requestCallback) {
 	};
 	
 	this.writeTextResponse = function(socketId, msg, keepAlive, contentType, httpCode) {
+	  try {
 		httpCode = httpCode ? httpCode : this.HTTP_OK_TEXT;
 
 		var ws = this;
@@ -187,6 +208,9 @@ rvWebServer = function(int_port, requestCallback) {
 			console.log("[writeTextResponse] done. writeInfo: ", writeInfo);
 			ws.writeResponse_End(socketId, keepAlive);
 		});
+	  } catch (e) {
+		console.error(e);
+	  }	
 	};
 
 	var headersStrToObj = function(headersStr) {
@@ -218,6 +242,7 @@ rvWebServer = function(int_port, requestCallback) {
 	};
 	
 	this.writeResponse_Headers = function(socketId, fileSize, headers, keepAlive, range, ifRange, ifNoneMatch) {
+	  try {
 		//Content type and length headers may come from cached headers file
 		var httpCode = this.HTTP_OK_TEXT;
 		
@@ -267,10 +292,13 @@ rvWebServer = function(int_port, requestCallback) {
 		socket.write(socketId, outputBuffer, function(writeInfo) {
 			console.log("WRITE_HEADERS socketId=" + socketId + " | bytesWritten=" + writeInfo.bytesWritten);
 		});
+	  } catch (e) {
+		console.error(e);
+	  }		
 	};
 	
 	this.writeResponse_Body_File = function(socketId, fileSize, headers, keepAlive, range, ifRange, ifNoneMatch, file) {
-		
+	  try {	
 		var ws = this;
 		var chunkSize = 10*1024*1024;
 		var startPos = 0;
@@ -323,6 +351,7 @@ rvWebServer = function(int_port, requestCallback) {
 		
 		fileReader.onload = function(e) {
 			socket.write(socketId, e.target.result, function(writeInfo) {
+			  try {	
 				if (writeInfo.bytesWritten < 0) {
 					console.log("WRITE_BODY socketId=" + socketId + " | error code=" + writeInfo.bytesWritten);
 					ws.writeResponse_End(socketId, false);
@@ -339,13 +368,20 @@ rvWebServer = function(int_port, requestCallback) {
 						ws.writeResponse_End(socketId, keepAlive);
 					}
 				}
+			  } catch (e) {
+			  	console.error(e);
+	  		  }	
 			});
 		};
 		
 		fileReader.readAsArrayBuffer(blobBuffer);
+	  } catch (e) {
+		console.error(e);
+	  }	
 	};
 
 	this.writeResponse_End = function(socketId, keepAlive) {
+	  try {
 		console.log("WRITE_END socketId=" + socketId + " | " + socketInfo.socketId + " | keepAlive=" + keepAlive)
 		if (keepAlive) {
 			readFromSocket(socketId);
@@ -357,6 +393,9 @@ rvWebServer = function(int_port, requestCallback) {
 			}
 			this.openSockets.remove(socketId);
 		}
+	  } catch (e) {
+		console.error(e);
+	  }
 	};
 
 	this.writeErrorResponse = function(socketId, errorCodeText, keepAlive) {

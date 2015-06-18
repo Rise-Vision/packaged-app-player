@@ -1,4 +1,4 @@
-// Copyright © 2010 - May 2014 Rise Vision Incorporated.
+// Copyright © 2010 - May 2015 Rise Vision Incorporated.
 // Use of this software is governed by the GPLv3 license
 // (reproduced in the LICENSE file).
 
@@ -106,8 +106,7 @@ rvCache = function () {
 				}
 			}
 		}
-		
-		downloadIfModified(requestUrl);
+		if (file) downloadIfModified(requestUrl);
 	};
 	var headersStrToObj = function(headersStr) {
 		var res = null;

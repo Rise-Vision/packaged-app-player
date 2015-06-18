@@ -1,4 +1,4 @@
-// Copyright © 2010 - May 2014 Rise Vision Incorporated.
+// Copyright © 2010 - May 2015 Rise Vision Incorporated.
 // Use of this software is governed by the GPLv3 license
 // (reproduced in the LICENSE file).
 
@@ -7,7 +7,6 @@ rvWorkers = function (onFileReady, onDownloadIfModified, onClearCache, onGetCach
 	var WORKER_STATUS_READY = 0;
 	var WORKER_STATUS_BUSY = 1;
 	var FILE_MANAGER_PATH =  "/js/cache/filemanagersync.js";
-	
 	var lastId = 0;
 	var fmWorkers = []; //array of file manager workers
 	var WorkerItem = function(worker, id) {
@@ -27,15 +26,29 @@ rvWorkers = function (onFileReady, onDownloadIfModified, onClearCache, onGetCach
 	};
 	
 	this.getFile = function(fileUrl) {
-		var wi = getWorkerItem(fmWorkers, FILE_MANAGER_PATH);
-		wi.status == WORKER_STATUS_BUSY;
-		wi.worker.postMessage({'cmd': 'getFile', 'id': wi.id, 'fileUrl': fileUrl});
+		navigator.webkitPersistentStorage.queryUsageAndQuota ( 
+		    function(usedBytes, grantedBytes) {  
+		    	var remainingBytes = grantedBytes - usedBytes;
+		        console.log('we are using ', usedBytes, ' and remainingBytes ', remainingBytes, 'bytes');
+		        var wi = getWorkerItem(fmWorkers, FILE_MANAGER_PATH);
+			wi.status == WORKER_STATUS_BUSY;
+			wi.worker.postMessage({'cmd': 'getFile', 'id': wi.id, 'fileUrl': fileUrl, 'remainingBytes': remainingBytes});
+		    }, 
+		    function(e) { console.log('Error', e);  }
+		);  
 	};
 
 	this.downloadIfModified = function(fileUrl) {
-		var wi = getWorkerItem(fmWorkers, FILE_MANAGER_PATH);
-		wi.status == WORKER_STATUS_BUSY;
-		wi.worker.postMessage({'cmd': 'downloadIfModified', 'id': wi.id, 'fileUrl': fileUrl});
+		navigator.webkitPersistentStorage.queryUsageAndQuota ( 
+		    function(usedBytes, grantedBytes) {  
+		    	var remainingBytes = grantedBytes - usedBytes;
+		        console.log('we are using ', usedBytes, ' and remainingBytes ', remainingBytes, 'bytes');
+		    	var wi = getWorkerItem(fmWorkers, FILE_MANAGER_PATH);
+			wi.status == WORKER_STATUS_BUSY;
+			wi.worker.postMessage({'cmd': 'downloadIfModified', 'id': wi.id, 'fileUrl': fileUrl, 'remainingBytes': remainingBytes});
+		    }, 
+		    function(e) { console.log('Error', e);  }
+		);  
 	};
 
 	this.clearCache = function() {
