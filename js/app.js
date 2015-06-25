@@ -1,45 +1,9 @@
-﻿// Copyright © 2010 - May 2014 Rise Vision Incorporated.
+// Copyright © 2010 - May 2015 Rise Vision Incorporated.
 // Use of this software is governed by the GPLv3 license
 // (reproduced in the LICENSE file).
 
 var $rv = $rv || {}; //Rise Vision namespace
 console.log(launchData);
-
-var downloadFileComplete = function(xhrProgressEvent, fileName, fileUrl) {
-
-    // we have the file details
-    // so now we need to wrap the file up, including
-    // the caching information to return back
-    var xhr = xhrProgressEvent.target;
-    fileData = xhr.response; //blob
-    var fileInfo = xhr.getAllResponseHeaders();
-
-    if(xhr.readyState === 4) {
-      if(xhr.status === 200) {
-    	  console.log("downloadFileComplete OK. URL:" + window.URL.createObjectURL(fileData));
-    	  
-    	  
-    	  var headers = extractHeaders(xhr, fileUrl);
-    	  
-    	  var version = getCurrentVersion(fileName) + 1;
-    	  
-    	  var w = new Worker("/js/cache/filemanagersync.js")
-    	  w.postMessage(fileName);
-    	  
-    	  getCurrentVersion(fileName) + 1;
-
-    	  saveFile(formatFileName(fileName, version, FILE_EXT_DATA), fileData);
-    	  headerBlob = new Blob([headers], {type: "text/plain;charset=UTF-8"});
-    	  saveFile(formatFileName(fileName, version, FILE_EXT_HEADERS), headerBlob);
-    	  //testImage.src = window.URL.createObjectURL(fileData);
-    	  //saveFile(fileData)
-        //callbackSuccess(fileData, fileInfo);
-      } else {
-    	  console.log("downloadFileComplete NOT OK");
-        //callbackError(xhrProgressEvent);
-      }
-    }
-};
 
 $rv.debug = launchData.debugMode;
 
@@ -54,7 +18,7 @@ onload = function (e) {
             height: launchData.windowOptions.height
     	} );
 
-
+    w.onBoundsChanged.addListener(updateDisplayProperties);
     $rv.browser = document.querySelector('#viewer');
     
     $rv.browser.addEventListener('exit', function(e) {
@@ -129,7 +93,7 @@ var onConfigLoad = function() {
 };
 
 function resizeBrowser() {
-	$rv.heightOffset = $rv.debug ? 50 : 0;
+    $rv.heightOffset = $rv.debug ? 50 : 0;
     if ($rv.browser) {
         var windowWidth = launchData.windowOptions.width;
         var windowHeight = launchData.windowOptions.height - $rv.heightOffset;
@@ -140,6 +104,43 @@ function resizeBrowser() {
 
     }
 } 
+
+function updateDisplayProperties() {
+    console.log('updateDisplayProperties event called');
+	chrome.system.display.getInfo(function(displays) {
+		console.log(displays[0].bounds.left);	
+		var f_mon=0;var f_left=0;var f_top=0;var max_width=0;var max_height=0;var total_width=0;var total_height=0;
+		for (var i = 0; i < displays.length; i++) {
+		        var display = displays[i];
+		        if(launchData.os == "win") {
+		        	if(display.bounds.left > f_left) {f_left=display.bounds.left;f_mon=i;}
+		        	if(display.bounds.top > f_top) {f_top=display.bounds.top;f_mon=i;}
+		        	if(display.bounds.width > max_width) {max_width=display.bounds.width;}
+		        	if(display.bounds.height > max_height) {max_height=display.bounds.height;}
+			} else {
+				if(display.bounds.left === 0 && display.bounds.top === 0) {
+					total_width=display.bounds.width;
+					total_height=display.bounds.height;	
+				}
+			}
+		}
+		
+		if(launchData.os == "win") {
+			var display = displays[f_mon];
+			launchData.windowOptions.width = display.bounds.left+max_width;
+			launchData.windowOptions.height = display.bounds.top+max_height;
+		} else {
+			launchData.windowOptions.width = total_width;
+			launchData.windowOptions.height = total_height;
+		}
+		
+		if(launchData.os != "win" || displays.length === 1) {
+			launchData.windowOptions.state = launchData.debugMode ? 'normal' : 'fullscreen';
+		}
+		resizeBrowser();
+	});
+}
+
 
 $rv.close = function() {
 	window.close();
