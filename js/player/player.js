@@ -166,14 +166,17 @@ rvPlayer = function () {
 				ws.writeTextResponse(socketId, "", keepAlive, ws.CONTENT_TYPE_TEXT_PLAIN);
 			} else if (cmd === "/restart") {
 				log("restart command received");
-				restart();
+                                $rv.extLogger.log("restart command received")
+                                .then(restart);
 			} else if (cmd === "/reboot") {
 				log("reboot command received");
-				reboot();
+                                $rv.extLogger.log("reboot command received")
+                                .then(reboot);
 	        } else if (cmd === "/shutdown") {
 				log("shutdown command received");
+                                $rv.extLogger.log("shutdown command received")
+                                .then(shutdown);
 				//ws.writeTextResponse(socketId, "", keepAlive, ws.CONTENT_TYPE_TEXT_PLAIN);
-				shutdown();
 	        } else if (cmd === "/config") {
 	        	//var configHTML = rvGetConfigPageHtml($rv.config.displayId, $rv.config.claimId, $rv.config.server)
 	        	var configHTML = configPage.get($rv.config.displayId, $rv.config.claimId, $rv.config.server, $rv.config.viewerServer);
@@ -357,6 +360,7 @@ rvPlayer = function () {
 	
 	var reloadViewer = function() {
 		log("[reload Viewer]");
+                $rv.extLogger.log("reloading viewer");
 		$rv.browser.reload();
 	};
 
