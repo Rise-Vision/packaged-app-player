@@ -80,8 +80,8 @@ onload = function (e) {
 var onConfigLoad = function() {
 
     try {
-        $rv.segment = new rvSegment();
-        $rv.segment.log("CAP_STARTED");
+        $rv.extLogger = new rvExtLogger();
+        $rv.extLogger.log("CAP_STARTED");
 
         $rv.cache = new rvCache();
         $rv.cache.init($rv.config);
