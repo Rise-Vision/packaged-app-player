@@ -20,8 +20,9 @@ rvConfig = function () {
 	this.port = "COM1";
 	this.onStr = "";
 	this.offStr = "";
+        this.ipAddress = "";
 	
-	var onInitPrereq = ["loadDisplayProperties", "getPlatformInfo"]; //prerequisites to complete before firing onInit
+	var onInitPrereq = ["loadDisplayProperties", "getPlatformInfo", "getIPAddress"]; //prerequisites to complete before firing onInit
 	
 	this.server = "production";
 	this.serverUrl = VIEWER_SERVER_PRODUCITON;
@@ -32,6 +33,8 @@ rvConfig = function () {
 		this.getPlatformInfo(onInitCallback); //get OS name
 
 		this.loadDisplayProperties(onInitCallback);
+
+                this.getIPAddress(onInitCallback);
 	};
 
 	this.fireOnInit = function(onInitCallback, completedPrereq) {
@@ -159,6 +162,18 @@ rvConfig = function () {
     	var appInfo = chrome.runtime.getManifest();
     	this.appVersion = appInfo.version;
 	};
+
+        this.getIPAddress = function(onInitCallback) {
+          var self = this;
+          fetch("http://ident.me").then(function(resp) {
+            return resp.text();
+          }).then(function(text) {
+            self.ipAddress = text;
+            self.fireOnInit(onInitCallback, "getIPAddress");
+          }).catch(function(err) {
+            console.log("Could not get ip address: " + err.message);
+          });
+        };
 
 	this.getSysInfo = function() {
 		//example: "os={OS}&pn={PlayerName}&iv={InstallerVersion}&jv={CurrentJavaVersion}&ev={CurrentRiseCacheVersion}&pv={CurrentRisePlayerVersion}";
