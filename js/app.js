@@ -80,11 +80,15 @@ onload = function (e) {
 var onConfigLoad = function() {
 
     try {
+        $rv.extLogger = new rvExtLogger();
+        $rv.extLogger.log("logger loaded");
+
         $rv.cache = new rvCache();
         $rv.cache.init($rv.config);
     
         $rv.player = new rvPlayer();
         $rv.player.init($rv.config);
+        $rv.extLogger.log("player initialized");
         
         resizeBrowser();
     } catch (e) {
