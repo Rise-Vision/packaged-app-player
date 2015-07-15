@@ -94,12 +94,15 @@ rvPlayer = function () {
 	        } else if (cmd === "/set_property") {
 	    		if ("true" === (ws.getUrlParam(qs, "reboot_required"))) {
 	    			log("reboot_required received");
+                                $rv.extLogger.log("reboot_required received");
 	    			reboot();
 	    		} else if ("true" === (ws.getUrlParam(qs, "restart_required"))) {
 	    			log("restart_required received");
+                                $rv.extLogger.log("restart_required received");
 	    			restart();
 	    		} else if ("true" === (ws.getUrlParam(qs, "update_required"))) {
 	    			log("update_required received");
+                                $rv.extLogger.log("update_required received");
 	    			checkForUpdate();
 	    			//Utils.restart(); 
 	    		} else	if ("true" === (ws.getUrlParam(qs, "reboot_enabled"))) {

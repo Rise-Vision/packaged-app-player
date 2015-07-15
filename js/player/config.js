@@ -169,9 +169,11 @@ rvConfig = function () {
             return resp.text();
           }).then(function(text) {
             self.ipAddress = text;
-            self.fireOnInit(onInitCallback, "getIPAddress");
           }).catch(function(err) {
             console.log("Could not get ip address: " + err.message);
+          })
+          .then(function() {
+            self.fireOnInit(onInitCallback, "getIPAddress");
           });
         };
 
