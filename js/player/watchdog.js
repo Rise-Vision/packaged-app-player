@@ -29,6 +29,7 @@ rvWatchdog = function () {
 			if ((lastHearbeat.getTime() + MAX_HEARTBEAT_GAP_MS) < now.getTime()) {
 				if (callback) {
 					console.log('watchdog triggered at ' + now);
+                                        $rv.extLogger.log("watchdog triggered");
 					callback();
 				}
 			}

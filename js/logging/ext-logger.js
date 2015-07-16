@@ -24,7 +24,7 @@ rvExtLogger = function() {
                 "json": {
                   "event": "",
                   "display_id": "",
-                  "ip": "",
+                  "ip": $rv.config.ipAddress,
                   "os": $rv.config.osName,
                   "chrome_version": /Chrome\/([0-9.]+)/.exec(navigator.appVersion)[1],
                   "cap_version": $rv.config.appVersion,
