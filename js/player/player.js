@@ -86,6 +86,7 @@ rvPlayer = function () {
 				ws.writeTextResponse(socketId, cb, keepAlive, ws.CONTENT_TYPE_JAVASCRIPT);
 
 	        } else if (cmd === "/heartbeat") {
+                                $rv.extLogger.log("watchdog poke");
 				watchdog.poke();
 	        	var cb = ws.getUrlParam(qs, "callback");
 				cb = cb ? cb + "();" : "";
