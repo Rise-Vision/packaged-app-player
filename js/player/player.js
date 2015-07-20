@@ -115,11 +115,13 @@ rvPlayer = function () {
 	    		} else if ("off" === (ws.getUrlParam(qs, "display_command"))) {
 	    			if($rv.config.dcStatus === "on") {
 		    			log("display displayStandby off received");
+                                        $rv.extLogger.log("display_standby_off received");
 		    			displayStandby(false);
 	    			}
 	    		} else if ("on" === (ws.getUrlParam(qs, "display_command"))) {
 	    			if($rv.config.dcStatus === "on") {
 		    			log("display displayStandby on received");
+                                        $rv.extLogger.log("display_standby_on received");
 		    			displayStandby(true);
 		    		}
 	    		}
@@ -197,6 +199,7 @@ rvPlayer = function () {
 	        }
 		} catch (e) {
     			log("rvplayer:onRequest error" + e.message);
+                        $rv.extLogger.log("onRequest error");
 			ws.writeErrorResponse(socketId, keepAlive, ws.HTTP_BAD_REQUEST_TEXT);
 		}
         

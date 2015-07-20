@@ -415,6 +415,12 @@
 			socketInfo = _socketInfo;
 			$rv.onSocketCreated(socketInfo.socketId);
 			socket.listen(socketInfo.socketId, "127.0.0.1", port, 50, function(result) {
+                                if (chrome.runtime.lastError) {
+                                  $rv.extLogger.log("socket listen error");
+                                  console.log("socket listen error: " + chrome.runtime.lastError.message);
+                                  setTimeout(function() {window.close();}, 5000);
+                                  return;
+                                }
 				console.log("LISTENING:", result);
 				//Accept the first response
 				socket.accept(socketInfo.socketId, onAccept);
