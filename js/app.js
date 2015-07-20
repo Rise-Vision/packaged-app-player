@@ -81,7 +81,7 @@ var onConfigLoad = function() {
 
     try {
         $rv.extLogger = new rvExtLogger();
-        $rv.extLogger.log("logger loaded");
+        $rv.extLogger.log("launch from " + $rv.config.launchSource);
 
         $rv.cache = new rvCache();
         $rv.cache.init($rv.config);

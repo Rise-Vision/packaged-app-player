@@ -17,6 +17,7 @@ function launchApp(launchData) {
 
     console.log('Application started. launchData:');
     console.log(launchData);
+    chrome.storage.local.set({launchSource: launchData.source});
     getCurrentOS();
 }
 

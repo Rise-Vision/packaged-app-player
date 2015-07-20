@@ -21,8 +21,9 @@ rvConfig = function () {
 	this.onStr = "";
 	this.offStr = "";
         this.ipAddress = "";
+        this.launchSource = "";
 	
-	var onInitPrereq = ["loadDisplayProperties", "getPlatformInfo", "getIPAddress"]; //prerequisites to complete before firing onInit
+	var onInitPrereq = ["loadDisplayProperties", "getPlatformInfo", "getIPAddress", "getLaunchSource"]; //prerequisites to complete before firing onInit
 	
 	this.server = "production";
 	this.serverUrl = VIEWER_SERVER_PRODUCITON;
@@ -35,6 +36,8 @@ rvConfig = function () {
 		this.loadDisplayProperties(onInitCallback);
 
                 this.getIPAddress(onInitCallback);
+
+                this.getLaunchSource(onInitCallback);
 	};
 
 	this.fireOnInit = function(onInitCallback, completedPrereq) {
@@ -174,6 +177,14 @@ rvConfig = function () {
           })
           .then(function() {
             self.fireOnInit(onInitCallback, "getIPAddress");
+          });
+        };
+
+        this.getLaunchSource = function(onInitCallback) {
+          var self = this;
+          chrome.storage.local.get(["launchSource"], function(resp) {
+            self.launchSource = resp.launchSource;
+            self.fireOnInit(onInitCallback, "getLaunchSource");
           });
         };
 
