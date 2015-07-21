@@ -418,7 +418,9 @@
                                 if (chrome.runtime.lastError) {
                                   $rv.extLogger.log("socket listen error");
                                   console.log("socket listen error: " + chrome.runtime.lastError.message);
-                                  setTimeout(function() {window.close();}, 5000);
+                                  $rv.messageWindow("The player could not listen on port " + port +
+                                  ". A player or other application may already be using that port.");
+                                  setTimeout(function() {window.close();}, 5500);
                                   return;
                                 }
 				console.log("LISTENING:", result);
