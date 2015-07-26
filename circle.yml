@@ -16,8 +16,8 @@ deployment:
   staging:
     branch: /(feature|fix|chore).*/
     commands:
-      - npm run deploy
+      - node deploy.js
   production:
     branch: master
     commands:
-      - npm run deploy
+      - node deploy.js
