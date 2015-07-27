@@ -168,16 +168,19 @@ rvConfig = function () {
 
         this.getIPAddress = function(onInitCallback) {
           var self = this;
-          fetch("http://ident.me").then(function(resp) {
-            return resp.text();
-          }).then(function(text) {
-            self.ipAddress = text;
-          }).catch(function(err) {
-            console.log("Could not get ip address: " + err.message);
-          })
-          .then(function() {
+          var xhr = new XMLHttpRequest();
+          xhr.responseType = "text";
+          xhr.open("GET", "http://ident.me", true);
+          xhr.onloadend = function() {
+            if (xhr.responseText) {
+              self.ipAddress = xhr.responseText;
+            } else {
+              console.log("Could not get ip address");
+            }
+
             self.fireOnInit(onInitCallback, "getIPAddress");
-          });
+          };
+          xhr.send();
         };
 
         this.getLaunchSource = function(onInitCallback) {

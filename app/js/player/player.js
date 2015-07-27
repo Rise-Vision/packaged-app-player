@@ -94,17 +94,13 @@ rvPlayer = function () {
 	        } else if (cmd === "/set_property") {
 	    		if ("true" === (ws.getUrlParam(qs, "reboot_required"))) {
 	    			log("reboot_required received");
-                                $rv.extLogger.log("reboot_required received");
-	    			reboot();
+                                $rv.extLogger.log("reboot_required received", reboot);
 	    		} else if ("true" === (ws.getUrlParam(qs, "restart_required"))) {
 	    			log("restart_required received");
-                                $rv.extLogger.log("restart_required received");
-	    			restart();
+                                $rv.extLogger.log("restart_required received", restart);
 	    		} else if ("true" === (ws.getUrlParam(qs, "update_required"))) {
 	    			log("update_required received");
-                                $rv.extLogger.log("update_required received");
-	    			checkForUpdate();
-	    			//Utils.restart(); 
+                                $rv.extLogger.log("update_required received", checkForUpdate);
 	    		} else	if ("true" === (ws.getUrlParam(qs, "reboot_enabled"))) {
 	    			var rebootTime = ws.getUrlParam(qs, "reboot_time");
 	    			if (rebootTime) {
@@ -171,16 +167,13 @@ rvPlayer = function () {
 				ws.writeTextResponse(socketId, "", keepAlive, ws.CONTENT_TYPE_TEXT_PLAIN);
 			} else if (cmd === "/restart") {
 				log("restart command received");
-                                $rv.extLogger.log("restart command received")
-                                .then(restart);
+                                $rv.extLogger.log("restart command received", restart);
 			} else if (cmd === "/reboot") {
 				log("reboot command received");
-                                $rv.extLogger.log("reboot command received")
-                                .then(reboot);
+                                $rv.extLogger.log("reboot command received", reboot);
 	        } else if (cmd === "/shutdown") {
 				log("shutdown command received");
-                                $rv.extLogger.log("shutdown command received")
-                                .then(shutdown);
+                                $rv.extLogger.log("shutdown command received", shutdown);
 				//ws.writeTextResponse(socketId, "", keepAlive, ws.CONTENT_TYPE_TEXT_PLAIN);
 	        } else if (cmd === "/config") {
 	        	//var configHTML = rvGetConfigPageHtml($rv.config.displayId, $rv.config.claimId, $rv.config.server)
@@ -366,8 +359,7 @@ rvPlayer = function () {
 	
 	var reloadViewer = function() {
 		log("[reload Viewer]");
-                $rv.extLogger.log("reloading viewer");
-		$rv.browser.reload();
+                $rv.extLogger.log("reloading viewer", $rv.browser.reload);
 	};
 
 	var restart = function() {
