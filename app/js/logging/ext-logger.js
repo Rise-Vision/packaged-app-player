@@ -12,8 +12,6 @@ rvExtLogger = function() {
         this.EXT_SERVICE_URL = this.EXT_SERVICE_URL.replace("DATASET_ID", this.DATASET_ID);
         this.REFRESH_URL = "https://www.googleapis.com/oauth2/v3/token?client_id=1088527147109-6q1o2vtihn34292pjt4ckhmhck0rk0o7.apps.googleusercontent.com&client_secret=nlZyrcPLg6oEwO9f9Wfn29Wh&refresh_token=1/xzt4kwzE1H7W9VnKB8cAaCx6zb4Es4nKEoqaYHdTD15IgOrJDtdun6zK6XiATCKT&grant_type=refresh_token";
         this.HTTP_METHOD = "POST";
-        this.HEADERS = new Headers();
-        this.HEADERS.append("Content-Type", "application/json");
         this.INSERT = {
             "kind": "bigquery#tableDataInsertAllRequest",
             "skipInvalidRows": false,
@@ -35,18 +33,20 @@ rvExtLogger = function() {
         };
         this.REFRESH_DATE = 0;
 
-	this.log = function(eventName) {
+	this.log = function(eventName, cb) {
           var self = this;
           if (!eventName) {return;}
 
           return this.refresh()
+          .catch(function(err) {
+            console.log("Error on external log " + err.message);
+          })
           .then(function(refreshData) {
             var date = new Date(),
             year = date.getFullYear(),
             month = date.getMonth() + 1,
             day = date.getDate(),
             insertData = self.INSERT,
-            headers = self.HEADERS,
             serviceUrl;
 
             if (month < 10) {month = "0" + month;}
@@ -61,13 +61,13 @@ rvExtLogger = function() {
             insertData.rows[0].json.event = eventName;
             insertData.rows[0].json.display_id = $rv.config.displayId || "";
             insertData.rows[0].json.time_millis = new Date() - 0;
-            headers.set("Authorization", "Bearer " + self.TOKEN);
 
-            return fetch(serviceUrl.replace("TABLE_ID", "events" + year + month + day), {
-              method: "POST",
-              body: JSON.stringify(insertData),
-              headers: headers
-            });
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", serviceUrl.replace("TABLE_ID", "events" + year + month + day), true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("Authorization", "Bearer " + self.TOKEN);
+            xhr.send(JSON.stringify(insertData));
+            if (cb) {cb()};
           });
         };
 
@@ -78,13 +78,13 @@ rvExtLogger = function() {
               return resolve({});
             }
 
-            fetch(self.REFRESH_URL, {method: "POST"})
-            .then(function(resp) {
-              return resp.json();
-            })
-            .then(function(json) {
-              resolve({token: json.access_token, refreshedAt: new Date()});
-            });
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = "json";
+            xhr.open("POST", self.REFRESH_URL, true);
+            xhr.onloadend = function() {
+              resolve({token: xhr.response.access_token, refreshedAt: new Date()});
+            };
+            xhr.send();
           });
         };
 };
