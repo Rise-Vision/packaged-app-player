@@ -26,7 +26,7 @@ rvExtLogger = function() {
                   "os": $rv.config.osName,
                   "chrome_version": /Chrome\/([0-9.]+)/.exec(navigator.appVersion)[1],
                   "cap_version": $rv.config.appVersion,
-                  "time_millis": 0
+                  "ts": 0
                 }
               }
             ]
@@ -43,9 +43,9 @@ rvExtLogger = function() {
           })
           .then(function(refreshData) {
             var date = new Date(),
-            year = date.getFullYear(),
-            month = date.getMonth() + 1,
-            day = date.getDate(),
+            year = date.getUTCFullYear(),
+            month = date.getUTCMonth() + 1,
+            day = date.getUTCDate(),
             insertData = self.INSERT,
             serviceUrl;
 
@@ -60,7 +60,7 @@ rvExtLogger = function() {
             insertData.rows[0].insertId = Math.random().toString(36).substr(2).toUpperCase();
             insertData.rows[0].json.event = eventName;
             insertData.rows[0].json.display_id = $rv.config.displayId || "";
-            insertData.rows[0].json.time_millis = new Date() - 0;
+            insertData.rows[0].json.ts = new Date().toISOString();
 
             var xhr = new XMLHttpRequest();
             xhr.open("POST", serviceUrl.replace("TABLE_ID", "events" + year + month + day), true);
