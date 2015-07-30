@@ -27,12 +27,16 @@ rvWatchdog = function () {
 			//console.log('on timer');
 			var now = new Date();
 			if ((lastHearbeat.getTime() + MAX_HEARTBEAT_GAP_MS) < now.getTime()) {
-				if (callback) {
-					console.log('watchdog triggered at ' + now);
-                                        $rv.extLogger.log("watchdog triggered");
-					callback();
-				}
+                          HEARTBEAT_TIMER_INTERVAL_MS = (HEARTBEAT_TIMER_INTERVAL_MS * 2) + (Math.random()*10000)
+                          if (HEARTBEAT_TIMER_INTERVAL_MS > 18000000) {HEARTBEAT_TIMER_INTERVAL_MS = 18000000 + (Math.random()*10000);}
+                          if (callback) {
+                            console.log('watchdog triggered at ' + now);
+                            $rv.extLogger.log("watchdog triggered");
+                            callback();
+                          }
+                          return;
 			}
+                        HEARTBEAT_TIMER_INTERVAL_MS = 60 * 1000;
 		} catch (e) {
 			console.log('watchdog error: ' + e.message);
 		} finally {

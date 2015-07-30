@@ -359,7 +359,7 @@ rvPlayer = function () {
 	
 	var reloadViewer = function() {
 		log("[reload Viewer]");
-                $rv.extLogger.log("reloading viewer", $rv.browser.reload);
+                $rv.extLogger.log("reloading viewer", function(){$rv.browser.reload();});
 	};
 
 	var restart = function() {
