@@ -16,7 +16,7 @@ rvFileManagerSync = function () {
 	var HEADER_FILE_URL = "File-URL";
 	var FILE_EXT_DATA = "dat";
 	var FILE_EXT_HEADERS = "txt";
-	var CACHE_MINIMUM_LIMIT = 512*1024*1024; //512MB
+	var CACHE_MINIMUM_LIMIT = 0;
 	var FILE_KEEP_IN_CACHE_DURATION_DAYS = 7;
 	var FILE_KEEP_IN_CACHE_DURATION_MS = FILE_KEEP_IN_CACHE_DURATION_DAYS * 24 * 60 * 60 * 1000; //milliseconds
 
