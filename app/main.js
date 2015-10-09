@@ -81,16 +81,11 @@ function handleOnWinClosed() {
 		chrome.socket.destroy(gLaunchData.sockets[i]);
 	}
 	chrome.power.releaseKeepAwake();
-};
+}
 
 
 chrome.runtime.onUpdateAvailable.addListener(function(details) {
-	if (os == "cros") {
-		console.log("updating to version " + details.version);
-		chrome.runtime.reload();
-	} else {
-		log("[reload - not supported on "+os+", new version will be available on app restart]");
-       	}	
+  console.log("will update to version " + details.version + " on scheduled restart");
 });
 
 chrome.power.requestKeepAwake("display");

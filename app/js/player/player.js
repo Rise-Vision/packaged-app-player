@@ -413,7 +413,7 @@ rvPlayer = function () {
 	};
 	
 	var startTimer_CheckForUpdate = function() {
-		setTimeout(onTimer_CheckForUpdate,  60 * 60 * 1000); // 1 hour interval
+		setTimeout(onTimer_CheckForUpdate,  60 * 1000 * 60 * 5);
 	};
 
 	var onTimer_CheckForUpdate = function() {
