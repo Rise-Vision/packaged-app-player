@@ -2,7 +2,8 @@ var spawnSync = require("child_process").spawnSync,
 fs = require("fs"),
 credentialsPath = "private-keys/player-chromeapp/oauth-credentials.json",
 utf8 = function() {return {encoding: "utf8"};},
-app_id = (process.env.CIRCLE_BRANCH === "master" ? "production_app_id" : "test_app_id"),
+credentials = JSON.parse(fs.readFileSync(credentialsPath, utf8())),
+appId = (process.env.CIRCLE_BRANCH === "master" ? credentials.production_app_id_no_restart : credentials.test_app_id),
 publishVersion;
 
 (function incrementPatchVersion() {
@@ -26,10 +27,10 @@ publishVersion;
   (manifestFilePath, JSON.stringify(manifest, null, 2), utf8());
 }());
 
+console.log("Deploying to " + appId);
+
 zip = spawnSync("zip", ["-r", "app", "app"], utf8());
 console.log(zip.stdout);
-
-credentials = JSON.parse(fs.readFileSync(credentialsPath, utf8()));
 
 accessTokenRequest = spawnSync("curl", ["--data",
 "refresh_token=" + credentials.refresh_token +
@@ -48,7 +49,7 @@ chromeWebStoreUploadRequest = spawnSync("curl", [
 "-X", "PUT",
 "-T", "app.zip",
 "-vv",
-"https://www.googleapis.com/upload/chromewebstore/v1.1/items/" + credentials[app_id]]);
+"https://www.googleapis.com/upload/chromewebstore/v1.1/items/" + appId]);
 
 console.log(JSON.parse(chromeWebStoreUploadRequest.stdout.toString()).uploadState);
 
@@ -65,6 +66,6 @@ chromeWebStorePublishRequest = spawnSync("curl", [
 "-X", "POST",
 "-vv",
 "-fail",
-"https://www.googleapis.com/chromewebstore/v1.1/items/" + credentials[app_id] + "/publish"]);
+"https://www.googleapis.com/chromewebstore/v1.1/items/" + appId + "/publish"]);
 
 process.exit(chromeWebStorePublishRequest.status);
