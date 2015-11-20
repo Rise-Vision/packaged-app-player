@@ -17,13 +17,15 @@
 //  this.HTTP_INSUFFICIENT_SPACE_TEXT = "500 Internal Server Error. Insufficient Space. Rise Cache.";
 //  this.HTTP_INTERNAL_ERROR_TEXT = "500 Internal Server Error. Rise Cache.";
 
-	
+
 	var socket = chrome.socket;
 	var socketInfo;
 	var port = int_port || 9999;
 	var requestCallback = requestCallback;
 	var useOptimistingAccept = true;
 	this.openSockets = new rvHashTable(); // key = socket id
+
+	var thisObject = this;
 
 
 	var stringToUint8Array = function(string, returnBuffer) {
@@ -97,12 +99,12 @@
 		        }
 			// Parse the request.
 			var data = arrayBufferToString(readInfo.data);
-			if (data.indexOf("GET ") == 0) {
+			if (data.indexOf("GET ") == 0 || data.indexOf("HEAD ") == 0) {
 				var headers = data.toLowerCase().split("\n");
 				console.log(headers);
 				var keepAlive = (headers.indexOf("connection: keep-alive") != -1);
 				var range = getRanges(headers);
-				
+
 				// we can only deal with GET requests
 				var uriEnd = data.indexOf(" ", 4);
 				if (uriEnd < 0) { /* throw a wobbler */
@@ -119,7 +121,14 @@
 
 				var headersObj = headersStrToObj(data.toLowerCase());
 				var cmd = uri;
-				requestCallback(socketId, cmd, qs, keepAlive, range, headersObj.ifRange, headersObj.ifNoneMatch );
+
+
+				if(data.indexOf("HEAD ") == 0){
+					thisObject.writeResponse_Headers(socketId, headersObj.ContentLength, headersObj, keepAlive, range, headersObj.ifRange, headersObj.ifNoneMatch);
+					thisObject.writeResponse_End(socketId, keepAlive);
+				} else{
+					requestCallback(socketId, cmd, qs, keepAlive, range, headersObj.ifRange, headersObj.ifNoneMatch, "HEAD", headersObj);
+				}
 
 			} else {
 				console.warn("invalid request: " + data);
@@ -185,7 +194,7 @@
 			+ "\nExpires: -1"
 			+ (keepAlive ? "\nConnection: keep-alive" : ""); 
 	};
-	
+
 	this.writeTextResponse = function(socketId, msg, keepAlive, contentType, httpCode) {
 	  try {
 		httpCode = httpCode ? httpCode : this.HTTP_OK_TEXT;
@@ -296,7 +305,7 @@
 		console.error(e);
 	  }		
 	};
-	
+
 	this.writeResponse_Body_File = function(socketId, fileSize, headers, keepAlive, range, ifRange, ifNoneMatch, file) {
 	  try {	
 		var ws = this;
